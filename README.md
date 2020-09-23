@@ -22,3 +22,5 @@ utilityobjective.m: Policymaker's objective, with gradient
 nonlcon_utilmax.m: The constraints of the model, with gradients
 
 trajectory.m: Simulates the model with a given trajectory of controls
+
+*.opt: Options files for Knitro solver.  Not needed if will use Matlab's built-in fmincon instead.
