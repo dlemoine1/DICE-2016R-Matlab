@@ -1,0 +1,11 @@
+algorithm    1
+bar_feasible 3
+gradopt      exact
+outlev       1
+honorbnds 1
+infeastol 1e-12
+bar_maxcrossit   20
+bar_murule   auto
+strat_warm_start  no
+bar_initmu   -1
+maxit        0
