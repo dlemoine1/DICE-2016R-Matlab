@@ -7,7 +7,7 @@ September 2020
 These files replicate DICE-2016R in Matlab.  
 
 They also extend it to use carbon and climate models recommended by Dietz et al. (2020) and to use a damage specification that builds on the expert survey from Pindyck (2019), as implemented by Lemoine (2021).
-See Appendix to "Incentivizing Negative Emissions Through Carbon Shares" (Lemoine, 2020) for model equations and details.
+See Appendix to "Incentivizing Negative Emissions Through Carbon Shares" (Lemoine, 2020) for model equations and details: https://eller.arizona.edu/sites/default/files/Econ-WP-20-08.pdf
 
 All files should be placed in the same directory.  Code will create an "output" subfolder within it.
 
