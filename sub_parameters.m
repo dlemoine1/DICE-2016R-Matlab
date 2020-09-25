@@ -1,6 +1,6 @@
 % Parameterization for DICE-2016R
 
-% Last edited: September 3, 2020 by Derek Lemoine
+% Last edited: September 25, 2020 by Derek Lemoine
 
 
 %% Parameters
@@ -30,7 +30,7 @@ Params.backstop = 2016.7; % backstop cost in 2015 (2010$ per ton C); default: 20
 Params.gpsi = 0.025; % initial decline in backstop cost per 5 years; default: 0.025
 Params.bound_abate = ones(Params.horizon,1); % upper bound on abatement rate
 if Params.dicenegems==1
-    Params.bound_abate(30:Params.horizon,1) = 1.2; % later can have negative emissions
+    Params.bound_abate(ceil(30*5/Params.timestep):Params.horizon,1) = 1.2; % later can have negative emissions
 end
 
 Params.L0 = 7403; % year 2015 population (millions)
