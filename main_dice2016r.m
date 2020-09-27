@@ -1,8 +1,9 @@
 % Replicates DICE-2016R
 
-% Last edited: September 11, 2020 by Derek Lemoine
+% Last edited: September 27, 2020 by Derek Lemoine
 
 clear all;
+close all;
 
 global iteration_number
 
@@ -321,6 +322,14 @@ cumulfossil = Params.cumulems0 + [0; cumulfossil(1:end-1,:)];
 % implied tax on emissions, from marginal abatement cost
 emtax_pertCO2 = Fun.mac(Params.sigma,abaterate,Ygross,[1:Params.horizon]'); % 2010$/tCO2
 % note that have to adjust last argument if not wanting to run from first period
+
+% atmospheric CO2, in ppm
+switch Params.carbonmodel
+    case 'dice' % atmospheric CO2 is the first reservoir
+        Carbon_ppm = M(:,1)/Params.gtc_per_ppm;
+    otherwise % atmospheric CO2 is sum of all reservoirs
+        Carbon_ppm = sum(M,2)/Params.gtc_per_ppm;
+end
 
 % approximate implied alpha
 if ~strcmp(Params.carbonmodel,'fair')
