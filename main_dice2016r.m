@@ -1,6 +1,6 @@
 % Replicates DICE-2016R
 
-% Last edited: September 27, 2020 by Derek Lemoine
+% Last edited: October 4, 2020 by Derek Lemoine
 
 clear all;
 close all;
@@ -18,7 +18,7 @@ Params.numyears = 500; % number of years in horizon; default: 500
 
 Params.climatemodel = 'dice'; % 'dice' or 'update'; determines whether use DICE-2016R climate dynamics or Geoffroy et al dynamics (see Dietz et al. 2020)
 Params.carbonmodel = 'dice'; % 'dice','gol','joos','fair'; determines whether use DICE-2016R carbon dynamics or one of the other models (see Dietz et al. 2020)
-Params.damagemodel = 'dice'; % which damage distribution: 'dice' is DICE-2016R, and 'expert' centers around Pindyck (2019) damages as implemented by Lemoine (2021)
+Params.damagemodel = 'dice'; % which damage distribution: 'dice' is DICE-2016R, and 'expert' is Pindyck (2019) damages as implemented by Lemoine (2021)
 
 Params.fixsavings = -99; % <0 (default): endogenize savings rate; >=0: savings rate fixed at this value
 Params.dicenegems = 1; % =1 (default): use DICE's constraint allowing negative emissions; =0: do not allow negative emissions
@@ -306,6 +306,8 @@ else % turn into appropriate vector
 end
 
 [ C, Ynet, K, T, M, emsind, Tocean, Ygross, abatecost] = trajectory( out_policy, 1, Params.horizon, Fun, Params );
+
+year = 2015 + [0:Params.timestep:Params.numyears-Params.timestep]';
 
 Welfare = sum(Params.discfactor.*Params.pop.*Fun.utility(C,Params.pop));
 
