@@ -12,7 +12,7 @@ See Appendix to "Incentivizing Negative Emissions Through Carbon Shares" (Lemoin
 
 All files should be placed in the same directory.  Code will create an "output" subfolder within it.
 
-main_dice2016r.m: The code should be run from here.  Options to control the climate, carbon, and damage models are provided at the top.  The code has not necessarily been tested on the non-default computational options.  In the default approach, solver guesses trajectories for all state variables and all non-consumption controls, imposes transition equations as constraints, and uses an analytic gradient.  Outputs the user may be interested in include Welfare, abaterate, emtax_pertCO2 (in 2010 dollars), T (temperature, deg C wrt 1900), Carbon_ppm (atmospheric carbon, in ppm), and emsind (industrial emissions, Gt C).
+main_dice2016r.m: The code should be run from here.  Options to control the climate, carbon, and damage models are provided at the top.  The code has not necessarily been tested on the non-default computational options.  In the default approach, solver guesses trajectories for all state variables and all non-consumption controls, imposes transition equations as constraints, and uses an analytic gradient.  Outputs the user may be interested in include Welfare, abaterate, emtax_pertCO2 (in 2010 dollars), T (temperature, deg C wrt 1900), Carbon_ppm (atmospheric carbon, in ppm), and emsind (industrial emissions, Gt C).  Elements of each vector correspond to elements of year vector.
 
 sub_parameters.m: Defines equations of the model and parameterizes the model.  Some users may want to change some of these parameters.  When changing equations, make sure to also change their derivatives.
 
