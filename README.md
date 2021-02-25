@@ -2,8 +2,7 @@
 
 Created by Derek Lemoine, University of Arizona
 
-First version: September 2020
-Updated: February 2021
+First version: September 2020, Updated: February 2021
 
 Suggested citation: Lemoine, Derek.  2020.  DICE-2016R-Matlab. https://github.com/dlemoine1/DICE-2016R-Matlab
 
