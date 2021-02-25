@@ -1,12 +1,11 @@
 % Replicates DICE-2016R
 
-% Last edited: October 4, 2020 by Derek Lemoine
+% Last edited: February 24, 2021 by Derek Lemoine
 
 clear all;
 close all;
 
 global iteration_number
-
 
 
 %% User Options %%%%%%%%%%%%%%%
@@ -24,6 +23,8 @@ Params.fixsavings = -99; % <0 (default): endogenize savings rate; >=0: savings r
 Params.dicenegems = 1; % =1 (default): use DICE's constraint allowing negative emissions; =0: do not allow negative emissions
 Params.dicecumulems = 1; % =1 (default): use DICE's constraint on cumulative emissions; =0: no constraint
 Params.dicelrsavings = 1; % =1 (default): fix long-run savings rate as in DICE; =0: don't
+Params.dicefirstperabate = 0; % =1: fix first-period abatement as in DICE, so optimization begins only from second-period; =0 (default): optimize all periods
+Params.optimizeonlysavings = 0; % =1: optimize only savings and then calculate the social cost of carbon; =0 (default): optimize abatement as well
 
 % Computational options
 Params.transitionsasconstraints = 1; % =0: solve by guessing policy and simulating trajectories; =1 (default): solve by also guessing states and treating transition equations as constraints
@@ -40,6 +41,10 @@ Params.screenreport = 0; % =1: report output summary to screen as optimize; =0: 
 % Obtain directory
 [maindir,~,~] = fileparts(mfilename('fullpath'));
 addpath(maindir);
+
+%Exporting Command Window Outputs to .txt file
+cd(maindir);
+diary 'FileRunOutput.txt'
 
 
 
@@ -66,7 +71,7 @@ else
         parpool(5);
         Params.optimize_options_list = optimoptions(@fmincon,'Display','off','Algorithm',Params.fminconalgorithm,'UseParallel',true);
     else
-        Params.optimize_options_list = optimoptions(@fmincon,'StepTolerance',1e-10,'ConstraintTolerance',1e-10,'MaxFunctionEvaluations',1e4,'MaxIterations',5e3,'Display','final-detailed','Algorithm',Params.fminconalgorithm,'SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true);
+        Params.optimize_options_list = optimoptions(@fmincon,'StepTolerance',1e-10,'ConstraintTolerance',1e-10,'MaxFunctionEvaluations',3e4,'MaxIterations',5e3,'Display','final-detailed','Algorithm',Params.fminconalgorithm);
     end
 end
 
@@ -108,9 +113,9 @@ end
 
 switch Params.damagemodel
     case 'dice'
-        disp('Damages centered around DICE-2016R');
+        disp('Damages from DICE-2016R');
     case 'expert'
-        disp('Damages centered around Pindyck (2019) expert survey, via Lemoine (2021)');
+        disp('Damages based on Pindyck (2019) expert survey, via Lemoine (2021)');
     otherwise
         error('Unrecognized damage type');
 end
@@ -123,23 +128,37 @@ if Params.dohpc ~= 1 % set up directory for a run on personal computer
     Params.savedir = [maindir filesep 'output' filesep customdir ];    
     
     Params.savedir = [Params.savedir '_climate-' Params.climatemodel '_carbon-' Params.carbonmodel '_dam-' Params.damagemodel];
+    Params.filenaming = ['cli-' Params.climatemodel '_car-' Params.carbonmodel '_dam-' Params.damagemodel];
     
     if Params.fixsavings>=0
         Params.savedir = [Params.savedir '_fixedsavings-' num2str(Params.fixsavings)];
+        Params.filenaming = [Params.filenaming '_fixedsavings-' num2str(Params.fixsavings)];
     end        
     
     if Params.dicenegems~=1
         Params.savedir = [Params.savedir '_nonegems'];
+        Params.filenaming = [Params.filenaming '_nonegems'];
     end
     
     if Params.dicecumulems~=1
         Params.savedir = [Params.savedir '_nocumulems'];
+        Params.filenaming = [Params.filenaming '_nocumulems'];
     end
     
     if Params.dicelrsavings~=1
         Params.savedir = [Params.savedir '_freelrsavings'];
+        Params.filenaming = [Params.filenaming '_freelrsavings'];
     end
-        
+       
+    if Params.optimizeonlysavings==1
+        Params.savedir = [Params.savedir '_noabate'];
+        Params.filenaming = [Params.filenaming '_noabate'];
+    end
+    if Params.dicefirstperabate==1
+        Params.savedir = [Params.savedir '_exogabate1'];
+        Params.filenaming = [Params.filenaming '_exogabate1'];
+    end    
+    
     if Params.transitionsasconstraints==1
         Params.savedir = [Params.savedir '_constraint-sol'];
     else
@@ -194,8 +213,9 @@ else
     disp('Beginning to optimize abatement rate.');
 end
 
+
 % optimize
-dosolve=2; % when = 2, will try at most two times
+dosolve=1; % when = x, will try at most x times
 elapsedtime = 0;
 tic;
 while dosolve>0
@@ -203,7 +223,10 @@ while dosolve>0
         [out_controls,fval,exitflag,outputstruct,lambdastruct,gradient,hessian] = knitromatlab(objective,guess(:),[],[],[],[],lb(:),ub(:),nonlcon,[],Params.optimize_options_list,Params.knitro_options_file);
         if exitflag<0
             disp(['Warning: Optimization may have failed, with exitflag ' num2str(exitflag)]);
-            dosolve = 0;
+            dosolve = dosolve - 1;
+            if dosolve > 0
+                guess = out_controls;
+            end
         else
             disp('Solved successfully')
             dosolve = 0;
@@ -212,10 +235,12 @@ while dosolve>0
         [out_controls,fval,exitflag,outputstruct,lambdastruct,gradient,hessian] = fmincon(objective,guess(:),[],[],[],[],lb(:),ub(:),nonlcon,Params.optimize_options_list);
         if exitflag<=0
             disp(['Warning: Optimization may have failed, with exitflag ' num2str(exitflag)]);
-            dosolve = 0; %dosolve - 1;
-            %guess = out_controls;
-            % try sqp algorithm
-            %Params.optimize_options_list = optimoptions(@fmincon,'Algorithm','sqp','StepTolerance',1e-10,'ConstraintTolerance',1e-12,'MaxFunctionEvaluations',1e4,'MaxIterations',5e3,'Display','final-detailed','SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true);
+            dosolve = dosolve - 1;
+            if dosolve > 0
+                guess = out_controls;
+                % try sqp algorithm
+                Params.optimize_options_list = optimoptions(@fmincon,'Algorithm','sqp','StepTolerance',1e-10,'ConstraintTolerance',1e-12,'MaxFunctionEvaluations',1e4,'MaxIterations',5e3,'Display','final-detailed','SpecifyObjectiveGradient',true,'SpecifyConstraintGradient',true);
+            end
         else
             disp('Solved successfully')
             dosolve = 0;
@@ -227,34 +252,40 @@ end
 
 % store constraints
 [out_cneq,out_ceq] = nonlcon(out_controls);
-disp(['Max abs equality constraint is ' num2str(max(abs(out_ceq)))])
 
-% turn back into matrix
-out_controls = reshape(out_controls,Params.horizon,[]);
-
-% make sure state variable bounds didn't bind
-test_ub = ub;
-test_lb = lb;
-test_ub(:,[Params.col_abaterate Params.col_savingsrate]) = Inf; % don't care about controls binding, so get rid of that
-test_lb(:,[Params.col_abaterate Params.col_savingsrate]) = -Inf; % don't care about controls binding, so get rid of that
-ub_binding = sum( out_controls>=test_ub | abs(out_controls-test_ub)<=1e-4 , 1);
-lb_binding = sum( out_controls<=test_lb | abs(out_controls-test_lb)<=1e-4 , 1);
-if sum(ub_binding) > 0
-    disp(['Upper bounds on states bind ' mat2str(ub_binding) ' times']);
+if Params.transitionsasconstraints
+   
+    disp(['Max abs equality constraint is ' num2str(max(abs(out_ceq)))]);
+    
+    % turn back into matrix
+    out_controls = reshape(out_controls,Params.horizon,[]);
+    
+    % make sure state variable bounds didn't bind
+    test_ub = ub;
+    test_lb = lb;
+    test_ub(:,[Params.col_abaterate Params.col_savingsrate]) = Inf; % don't care about controls binding, so get rid of that
+    test_lb(:,[Params.col_abaterate Params.col_savingsrate]) = -Inf; % don't care about controls binding, so get rid of that
+    ub_binding = sum( out_controls>=test_ub | abs(out_controls-test_ub)<=1e-4 , 1);
+    lb_binding = sum( out_controls<=test_lb | abs(out_controls-test_lb)<=1e-4 , 1);
+    if sum(ub_binding) > 0
+        disp(['Upper bounds on states bind ' mat2str(ub_binding) ' times']);
+    end
+    if sum(lb_binding) > 0
+        disp(['Lower bounds on states bind ' mat2str(lb_binding) ' times']);
+    end
+    clear test_ub test_lb;
+            
 end
-if sum(lb_binding) > 0
-    disp(['Lower bounds on states bind ' mat2str(lb_binding) ' times']);
-end
-clear test_ub test_lb;
-
-% undo normalization
-out_controls = out_controls.*Params.normalization;
 
 
 %% Take Results %%%%%%%%%%%%%%%
 
 % store the policy variables
 if Params.transitionsasconstraints~=1
+    
+    % undo normalization
+    out_controls = out_controls(:).*Params.normalization(:);
+    
     out_policy = out_controls(:);
     
     out_policy2 = out_policy;
@@ -273,7 +304,11 @@ if Params.transitionsasconstraints~=1
     end
     clear out_policy2;
     
-else % turn into appropriate vector    
+else % turn into appropriate vector
+    
+    % undo normalization
+    out_controls = out_controls.*Params.normalization;
+    
     if Params.fixsavings>=0
         if strcmp(Params.carbonmodel,'fair')
             out_policy = [ out_controls(:,Params.col_alpha); out_controls(:,Params.col_abaterate) ];
@@ -334,7 +369,7 @@ switch Params.carbonmodel
 end
 
 % approximate implied alpha
-if ~strcmp(Params.carbonmodel,'fair')
+if strcmp(Params.carbonmodel,'fair')
     otherems = [100;Fun.otherems([1:Params.horizon-1]')]; % Params.horizon x 1 vector of cumulative emissions from deforestation (Gt C); is the leading 100 Gt C meant to adjust for all emissions prior to 2015?
     alphaimplied = Fun.alpha_analytic( Fun.IRF1(T,M,cumulemsind + cumsum(otherems)) );
 end
@@ -355,3 +390,46 @@ end
 
 save(['workspace.mat']);
 
+
+%% Calculate Social Cost of Carbon, based on code by both Lemoine and Healy %%%%%%%%%%%%%%%
+
+%Predefine SCC array
+SCC_pertCO2 = zeros(Params.horizon,1) ;
+
+%Save initial welfare result
+W0 = Welfare;
+
+for tstep = 1:Params.horizon
+
+    %Increment emissions in period tstep
+    Fun.otherems = @(t) Params.otherems0*(1-Params.gotherems).^((t-1)*Params.timestep/5) + (t==tstep);
+
+    %Call trajectory function to calculate new consumption vector and welfare
+    [ C_margems, ~, ~, ~, ~, ~, ~, ~, ~] = trajectory(out_policy, 1, Params.horizon, Fun, Params );
+    
+    %Calculate marginal welfare
+    W1e = sum(Params.discfactor.*Params.pop.*Fun.utility(C_margems,Params.pop)); 
+    
+    %Calculate partial derivative of welfare with respect to consumption
+    dWc = Params.discfactor(tstep)*Params.pop(tstep)*Fun.dutility_dC(C(tstep),Params.pop(tstep));
+    
+    %Calculate SCC
+    SCC_pertCO2(tstep,1) = -((W1e - W0)/dWc)*1000/Params.co2_per_c ;  
+
+end
+
+%Restore otherems function
+Fun.otherems = @(t) Params.otherems0*(1-Params.gotherems).^((t-1)*Params.timestep/5);
+
+clear W1e W0 dWc C_margems;
+
+
+%% Output Results to Excel File, from Ben Healy %%%%%%%%%%%%%%%
+
+%Run Output Script, from Ben Healy
+run OutputResults
+
+
+%% Final save
+
+save(['workspace.mat']);

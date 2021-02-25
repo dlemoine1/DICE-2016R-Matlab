@@ -1,6 +1,6 @@
 % Parameterization for DICE-2016R
 
-% Last edited: September 25, 2020 by Derek Lemoine
+% Last edited: February 24, 2021 by Derek Lemoine
 
 
 %% Parameters
@@ -31,6 +31,9 @@ Params.gpsi = 0.025; % initial decline in backstop cost per 5 years; default: 0.
 Params.bound_abate = ones(Params.horizon,1); % upper bound on abatement rate
 if Params.dicenegems==1
     Params.bound_abate(ceil(30*5/Params.timestep):Params.horizon,1) = 1.2; % later can have negative emissions
+end
+if Params.dicefirstperabate==1
+    Params.fixabate1=0.03; % DICE-2016R fixes first-period abatement at 3%    
 end
 
 Params.L0 = 7403; % year 2015 population (millions)
