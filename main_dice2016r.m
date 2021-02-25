@@ -10,7 +10,7 @@ global iteration_number
 
 %% User Options %%%%%%%%%%%%%%%
 
-customdir = '2020-09'; % prefix for save directory; not used if running on HPC
+customdir = '2021-02'; % prefix for save directory; not used if running on HPC
 
 Params.timestep = 5; % timestep, in years; default: 5
 Params.numyears = 500; % number of years in horizon; default: 500
@@ -42,10 +42,6 @@ Params.screenreport = 0; % =1: report output summary to screen as optimize; =0: 
 [maindir,~,~] = fileparts(mfilename('fullpath'));
 addpath(maindir);
 
-%Exporting Command Window Outputs to .txt file
-cd(maindir);
-diary 'FileRunOutput.txt'
-
 
 
 %% Parameterization %%%%%%%%%%%%%%%
@@ -75,50 +71,6 @@ else
     end
 end
 
-
-
-
-%% Error check %%%%
-
-if Params.fixsavings>=1
-    error('Savings rate too large');
-elseif Params.fixsavings>=0
-    disp(['Fixing savings rate at ' num2str(Params.fixsavings)]);
-end
-if Params.dicelrsavings~=1 && Params.dicelrsavings~=0
-    error('Params.dicelrsavings not binary.');
-end
-
-switch Params.climatemodel
-    case 'dice'
-        disp('DICE-2016R climate dynamics');
-    case 'update'
-        disp('Updated climate dynamics');
-    otherwise
-        error('Unrecognized climate model')
-end
-
-switch Params.carbonmodel
-    case 'dice'
-        disp('DICE-2016R carbon dynamics');
-    case 'gol'
-        disp('Golosov et al carbon dynamics');
-    case 'joos'
-        disp('Joos et al carbon dynamics');
-    case 'fair'
-        disp('FAIR carbon dynamics, including endogenous feedback parameter');
-    otherwise
-        error('Unrecognized carbon model')
-end
-
-switch Params.damagemodel
-    case 'dice'
-        disp('Damages from DICE-2016R');
-    case 'expert'
-        disp('Damages based on Pindyck (2019) expert survey, via Lemoine (2021)');
-    otherwise
-        error('Unrecognized damage type');
-end
 
 
 %% Directory Structure %%%%%%%%%%%%%%%
@@ -182,6 +134,9 @@ if Params.dohpc ~= 1 % set up directory for a run on personal computer
         copyfile([maindir filesep Params.knitro_options_file],Params.savedir);
     end
     
+    % exporting command window outputs to .txt file
+    diary 'DiceMessages.txt'
+    
 else % don't have permission to mkdir from Matlab on HPC, so use same directory for saving output
     
     Params.savedir = maindir;
@@ -194,6 +149,49 @@ if Params.dohpc==1
     delete([Params.savedir 'iteration_report.txt']);
 end
 
+
+
+%% Error check %%%%
+
+if Params.fixsavings>=1
+    error('Savings rate too large');
+elseif Params.fixsavings>=0
+    disp(['Fixing savings rate at ' num2str(Params.fixsavings)]);
+end
+if Params.dicelrsavings~=1 && Params.dicelrsavings~=0
+    error('Params.dicelrsavings not binary.');
+end
+
+switch Params.climatemodel
+    case 'dice'
+        disp('DICE-2016R climate dynamics');
+    case 'update'
+        disp('Updated climate dynamics');
+    otherwise
+        error('Unrecognized climate model')
+end
+
+switch Params.carbonmodel
+    case 'dice'
+        disp('DICE-2016R carbon dynamics');
+    case 'gol'
+        disp('Golosov et al carbon dynamics');
+    case 'joos'
+        disp('Joos et al carbon dynamics');
+    case 'fair'
+        disp('FAIR carbon dynamics, including endogenous feedback parameter');
+    otherwise
+        error('Unrecognized carbon model')
+end
+
+switch Params.damagemodel
+    case 'dice'
+        disp('Damages from DICE-2016R');
+    case 'expert'
+        disp('Damages based on Pindyck (2019) expert survey, via Lemoine (2021)');
+    otherwise
+        error('Unrecognized damage type');
+end
 
 
 %% Optimization %%%%%%%%%%%%%%%
@@ -433,3 +431,5 @@ run OutputResults
 %% Final save
 
 save(['workspace.mat']);
+
+diary off;

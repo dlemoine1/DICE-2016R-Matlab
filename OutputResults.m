@@ -118,16 +118,4 @@ writecell(modelDetails,filename,'Sheet',1,'Range','A1');
 %Exporting to the Excel file
 writecell(table1,filename,'Sheet',1,'Range','A7');
 
-%Closing and Saving Command Window Outputs to .txt File
-fileRunOutput = [maindir, filesep, 'FileRunOutput.txt'];
-
-%Check that File exists.
-if isfile(fileRunOutput)
-    diary off
-    try % in case fails because e.g. multiple processes
-        movefile(fileRunOutput, Params.savedir);
-    end
-end
-
-
-
+clear dt numyears 
