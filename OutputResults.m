@@ -124,7 +124,9 @@ fileRunOutput = [maindir, filesep, 'FileRunOutput.txt'];
 %Check that File exists.
 if isfile(fileRunOutput)
     diary off
-    movefile(fileRunOutput, Params.savedir);
+    try % in case fails because e.g. multiple processes
+        movefile(fileRunOutput, Params.savedir);
+    end
 end
 
 
