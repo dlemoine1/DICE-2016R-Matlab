@@ -37,7 +37,7 @@
 %This Script was created by Benjamin Healy and Professor Gilbert Metcalf
 %to run in conjuntion with Professor Derek Lemoine's 2016 DICE Model in MATLAB
 
-%LAST EDITED: February 24, 2021 by Derek Lemoine
+%LAST EDITED: July 24, 2021 by Derek Lemoine
 
 %% Gathering Important Outputs
 
@@ -61,8 +61,8 @@ otheremsCO2 = Fun.otherems([1:Params.horizon]')*Params.co2_per_c;
 emsind_annual = emsind / Params.timestep;
 emsind_annualCO2 = emsind_annual * Params.co2_per_c;
 
-%Revert sign-convention for welfare and convert to annual summation
-Welfare = -Params.timestep * Welfare;
+%Convert welfare to annual summation
+Welfare = Params.timestep * Welfare;
 
 %Vector of period increments
 periodVec = 1:t;                               
@@ -112,7 +112,7 @@ filename = ['Output_' Params.filenaming '.xlsx'];
 %Clearing previous data
 writecell(clearedCells,filename,'Sheet',1,'Range','A1');
 
-%Filing in Parameter Information
+%Filling in Parameter Information
 writecell(modelDetails,filename,'Sheet',1,'Range','A1');
 
 %Exporting to the Excel file

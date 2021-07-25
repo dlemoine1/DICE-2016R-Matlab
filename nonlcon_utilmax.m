@@ -2,7 +2,7 @@ function [cneq,ceq,gneq,geq] = nonlcon_utilmax( controls, tstart, horizon, Fun, 
 
 % Enforces constraints and potentially returns gradients of constraints
 
-% Last edited: September 11, 2020 by Derek Lemoine
+% Last edited: July 24, 2021 by Derek Lemoine
 
 cneq = [];
 ceq = [];
@@ -260,10 +260,10 @@ else
         if strcmp(Params.carbonmodel,'fair') % account for cumulative emissions in condition defining alpha
             cum_otherems = cumsum(otherems(1:t,1));
             % requires constr not to have changed since alpha:
-            geq([1:t]+(Params.col_K-1)*horizon, t+(constr-1)*horizon) = Fun.dIRF1_dems(T(t),M(t,:),cumulemsind(t) + cum_otherems(t)).*( Params.timestep*sigma(1:t,1).*(1-abaterate(1:t,1)).*Fun.dYgross_dK(tfp(1:t,1),pop(1:t,1),K(1:t,1))  ); % earlier periods' capital's effect on time t IRF1
-            geq([1:t]+(Params.col_K-1)*horizon, t+(constr-1)*horizon) = geq([1:t]+(Params.col_K-1)*horizon, t+(constr-1)*horizon).*Params.normalization(1:t,Params.col_K);
-            geq([1:t]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon) = Fun.dIRF1_dems(T(t),M(t,:),cumulemsind(t) + cumsum(otherems(t))).*( Params.timestep*sigma(1:t,1).*(-1).*Ygross(1:t,1)  ); % earlier periods' abatement's effect on time t IRF1
-            geq([1:t]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon) = geq([1:t]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon).*Params.normalization(1:t,Params.col_abaterate);
+            geq([1:t-1]+(Params.col_K-1)*horizon, t+(constr-1)*horizon) = Fun.dIRF1_dems(T(t),M(t,:),cumulemsind(t) + cum_otherems(t)).*( Params.timestep*sigma(1:t-1,1).*(1-abaterate(1:t-1,1)).*Fun.dYgross_dK(tfp(1:t-1,1),pop(1:t-1,1),K(1:t-1,1))  ); % earlier periods' capital's effect on time t IRF1
+            geq([1:t-1]+(Params.col_K-1)*horizon, t+(constr-1)*horizon) = geq([1:t-1]+(Params.col_K-1)*horizon, t+(constr-1)*horizon).*Params.normalization(1:t-1,Params.col_K);
+            geq([1:t-1]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon) = Fun.dIRF1_dems(T(t),M(t,:),cumulemsind(t) + cumsum(otherems(t))).*( Params.timestep*sigma(1:t-1,1).*(-1).*Ygross(1:t-1,1)  ); % earlier periods' abatement's effect on time t IRF1
+            geq([1:t-1]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon) = geq([1:t-1]+(Params.col_abaterate-1)*horizon, t+(constr-1)*horizon).*Params.normalization(1:t-1,Params.col_abaterate);
         end
     end    
     
