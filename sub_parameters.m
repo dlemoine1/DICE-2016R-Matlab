@@ -1,6 +1,6 @@
 % Parameterization for DICE-2016R
 
-% Last edited: February 24, 2021 by Derek Lemoine
+% Last edited: August 21, 2021 by Derek Lemoine
 
 
 %% Parameters
@@ -77,7 +77,7 @@ switch Params.climatemodel
         Params.phi1 = 0.1005;  % warming delay parameter; default: 0.1005
         Params.phi3 = 0.088; % xfer of heat from ocean to surface; default: 0.088
         Params.phi4 = 0.025; % xfer of heat from surface to ocean; default: 0.025
-    otherwise % Geoffroy et al. (2013) via Lemoine (2020)
+    otherwise % Geoffroy et al. (2013) via Dietz et al. (2020)
         Params.f2x = 3.503; % forcing from doubled CO2 (W/m^2); default: 3.503
         Params.lambda = 1.13; % forcing per degree warming (W/m^2/K); default: 1.13
         Params.phi1 = 0.386;  % warming delay parameter; default: 0.386
@@ -86,6 +86,9 @@ switch Params.climatemodel
 end
 Params.T0 = 0.85; % year 2015 surface temperature (deg C, rel to 1900); default: 0.85
 Params.Tocean0 = 0.0068; % year 2015 lower ocean temperature (deg C, rel to 1900); default: 0.0068
+if Params.timestep~=5
+    disp(['Warning: Are running with a ' num2str(Params.timestep) '-year timestep instead of a 5-year timestep, so linearized climate transitions are not perfect.']);
+end
 
 Params.cumulems0 = 400; % Gt C
 if Params.dicecumulems==1
