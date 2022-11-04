@@ -1,9 +1,14 @@
 % Replicates DICE-2016R
 
-% Last edited: February 24, 2021 by Derek Lemoine
+% Last edited: November 1, 2022 by Derek Lemoine
 
-clear all;
-close all;
+if ~exist('running_app','var') || running_app ~= 1
+    clear all;
+    close all;
+else
+    clear global iteration_number;
+end
+
 
 global iteration_number
 
@@ -19,7 +24,11 @@ Params.climatemodel = 'dice'; % 'dice' or 'update'; determines whether use DICE-
 Params.carbonmodel = 'dice'; % 'dice','gol','joos','fair'; determines whether use DICE-2016R carbon dynamics or one of the other models (see Dietz et al. 2020)
 Params.damagemodel = 'dice'; % which damage distribution: 'dice' is DICE-2016R, and 'expert' is Pindyck (2019) damages as implemented by Lemoine (2021)
 
-Params.fixsavings = -99; % <0 (default): endogenize savings rate; >=0: savings rate fixed at this value
+if ~exist('running_app','var') || running_app ~= 1
+    Params.fixsavings = -99; % <0 (default): endogenize savings rate; >=0: savings rate fixed at this value (suggest 0.25)
+else
+    Params.fixsavings = -99; % <0 (default): endogenize savings rate; >=0: savings rate fixed at this value (suggest 0.25)
+end
 Params.dicenegems = 1; % =1 (default): use DICE's constraint allowing negative emissions; =0: do not allow negative emissions
 Params.dicecumulems = 1; % =1 (default): use DICE's constraint on cumulative emissions; =0: no constraint
 Params.dicelrsavings = 1; % =1 (default): fix long-run savings rate as in DICE; =0: don't

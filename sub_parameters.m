@@ -1,14 +1,20 @@
 % Parameterization for DICE-2016R
 
-% Last edited: August 21, 2021 by Derek Lemoine
+% Last edited: November 2, 2022 by Derek Lemoine
 
 
 %% Parameters
 
 Params.horizon = Params.numyears/Params.timestep; % number of periods over which will optimize policy; default: 500/Params.timestep
 
-Params.discrate = 0.015; % annual utility discount rate; default: 0.015
-Params.rra = 1.45; % coefficient of relative risk aversion; default: 1.45
+if ~exist('running_app','var') || running_app ~= 1
+    Params.discrate = 0.015; % annual utility discount rate; default: 0.015
+    Params.rra = 1.45; % coefficient of relative risk aversion; default: 1.45
+else
+    Params.discrate = app.DiscRate/100; % annual utility discount rate; default: 0.015
+    Params.rra = app.AversionInequality; % coefficient of relative risk aversion; default: 1.45
+end
+
 
 Params.capshare = 0.3; %capital share in production; default: 0.3
 Params.deprec = 0.1; % annual capital depreciation rate; default: 0.1
@@ -16,21 +22,33 @@ Params.lrsavingsrate = Params.capshare*(Params.deprec+0.004)/(Params.deprec+0.00
 Params.dicelrsavings_firstper = Params.horizon-round(5*10/Params.timestep)+1; % period in which will begin fixing long-run savings rate
 Params.K0 = 223; % year 2015 capital (trillion 2010$); default: 223
 
-switch Params.damagemodel 
-    case 'dice'
-        Params.damcoeff = 0.00236; % damage coefficient; default: 0.00236
-    case 'expert' % from Lemoine (2021) fit to Pindyck (2019) variance
-        Params.damcoeff = 0.0228; % damage coefficient; default: 0.0228
-    otherwise
-        error('Unrecognized Params.damagemodel: %s',Params.damagemodel);
+if ~exist('running_app','var') || running_app ~= 1
+    switch Params.damagemodel
+        case 'dice'
+            Params.damcoeff = 0.00236; % damage coefficient; default: 0.00236
+        case 'expert' % from Lemoine (2021) fit to Pindyck (2019) variance
+            Params.damcoeff = 0.0228; % damage coefficient; default: 0.0228
+        otherwise
+            error('Unrecognized Params.damagemodel: %s',Params.damagemodel);
+    end
+else
+    Params.damcoeff = app.DamageCoefficient;
 end
 
 Params.abate_exp = 2.6; % abatement cost function exponent; default: 2.6
-Params.backstop = 2016.7; % backstop cost in 2015 (2010$ per ton C); default: 2016.7
+if ~exist('running_app','var') || running_app ~= 1
+    Params.backstop = 2016.7; % backstop cost in 2015 (2010$ per ton C); default: 2016.7
+else
+    Params.backstop = app.CostZeroCarbonTech*(12/44); % backstop cost in 2015 (2010$ per ton CO2); default: 2016.7
+end
 Params.gpsi = 0.025; % initial decline in backstop cost per 5 years; default: 0.025
 Params.bound_abate = ones(Params.horizon,1); % upper bound on abatement rate
 if Params.dicenegems==1
-    Params.bound_abate(ceil(30*5/Params.timestep):Params.horizon,1) = 1.2; % later can have negative emissions
+    if ~exist('running_app','var') || running_app ~= 1
+        Params.bound_abate(ceil(30*5/Params.timestep):Params.horizon,1) = 1.2; % later can have negative emissions
+    else
+        Params.bound_abate(ceil((app.DateNegativeEmissions-2015)/Params.timestep):Params.horizon,1) = 1.2; % later can have negative emissions
+    end
 end
 if Params.dicefirstperabate==1
     Params.fixabate1=0.03; % DICE-2016R fixes first-period abatement at 3%    
@@ -41,7 +59,11 @@ Params.Linf = 11500; % asymptotic population (millions)
 Params.gL = 0.134*(Params.timestep/5); % rate of approach to asymptotic population level; default: 0.134
 
 Params.tfp0 = 5.115; % initial tfp; default: 5.115
-Params.gA0 = 0.076; % initial growth rate of tfp per 5 years; default: 0.076
+if ~exist('running_app','var') || running_app ~= 1
+    Params.gA0 = 0.076; % initial growth rate of tfp per 5 years; default: 0.076
+else
+    Params.gA0 = app.InitialRateGrowth/100; % initial growth rate of tfp per 5 years; default: 0.076
+end
 Params.deltaA = 0.005; % annual decline in growth rate of tfp; default: 0.005
 
 Params.sigma0 = 0.0955; % initial emission intensity of output (Gt C per trillion 2010$); default: 0.0955
@@ -73,13 +95,21 @@ end
 switch Params.climatemodel
     case 'dice' % DICE-2016R
         Params.f2x = 3.6813; % forcing from doubled CO2 (W/m^2); default: 3.6813
-        Params.lambda = Params.f2x/3.1; % forcing per degree warming (W/m^2/K); default: Params.f2x/3.1
+        if ~exist('running_app','var') || running_app ~= 1
+            Params.lambda = Params.f2x/3.1; % forcing per degree warming (W/m^2/K); default: Params.f2x/3.1
+        else
+            Params.lambda = Params.f2x/app.ClimateSensitivity; % forcing per degree warming (W/m^2/K); default: Params.f2x/3.1
+        end
         Params.phi1 = 0.1005;  % warming delay parameter; default: 0.1005
         Params.phi3 = 0.088; % xfer of heat from ocean to surface; default: 0.088
         Params.phi4 = 0.025; % xfer of heat from surface to ocean; default: 0.025
     otherwise % Geoffroy et al. (2013) via Dietz et al. (2020)
         Params.f2x = 3.503; % forcing from doubled CO2 (W/m^2); default: 3.503
-        Params.lambda = 1.13; % forcing per degree warming (W/m^2/K); default: 1.13
+        if ~exist('running_app','var') || running_app ~= 1
+            Params.lambda = Params.f2x/3.1; % forcing per degree warming (W/m^2/K); default: Params.f2x/3.1
+        else
+            Params.lambda = Params.f2x/app.ClimateSensitivity; % forcing per degree warming (W/m^2/K); default: Params.f2x/3.1
+        end
         Params.phi1 = 0.386;  % warming delay parameter; default: 0.386
         Params.phi3 = 0.73; % xfer of heat from ocean to surface; default: 0.73
         Params.phi4 = 0.034; % xfer of heat from surface to ocean; default: 0.034
