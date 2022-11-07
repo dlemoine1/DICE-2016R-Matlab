@@ -2,7 +2,7 @@
 
 Created by Derek Lemoine, University of Arizona
 
-First version: September 2020, Updated: February 2021
+First version: September 2020, Updated: February 2021, Added front-end app: November 2022
 
 Suggested citation: Lemoine, Derek.  2020.  DICE-2016R-Matlab. https://github.com/dlemoine1/DICE-2016R-Matlab
 
@@ -14,7 +14,9 @@ All files should be placed in the same directory.  Code will create an "output" 
 
 DICE_Model_Description_from_metcalf.pdf: A description of the code courtesy of Professor Gib Metcalf (Tufts).  Note that the code could have changed slightly since this was written, so the line numbers may not perfectly match the current code.
 
-main_dice2016r.m: The code should be run from here.  Options to control the climate, carbon, and damage models are provided at the top.  The code has not necessarily been tested on the non-default computational options.  In the default approach, solver guesses trajectories for all state variables and all non-consumption controls, imposes transition equations as constraints, and uses an analytic gradient.  Outputs the user may be interested in include Welfare, abaterate, emtax_pertCO2 (in 2010 dollars), T (temperature, deg C wrt 1900), Carbon_ppm (atmospheric carbon, in ppm), and emsind (industrial emissions, Gt C).  Elements of each vector correspond to elements of year vector.  User may also be interested in SCC_pertCO2, which calculates marginal damage from a pulse of emissions in a given period.  If Params.optimizeonlysavings=1, then this gives the social cost of carbon along the business-as-usual trajectory.
+Optimal_Climate_Pathway.mlapp: A graphical interface for running the code that allows the user to set some parameters and that plots some key results.  Run this file directly if wanting to use the graphical interface.  Otherwise run main_dice2016r.m.  Credit to Ernesto Rivera Mora for assistance coding this interface.
+
+main_dice2016r.m: If not using the fornt-end app, then the code should be run from here.  Options to control the climate, carbon, and damage models are provided at the top.  The code has not necessarily been tested on the non-default computational options.  In the default approach, solver guesses trajectories for all state variables and all non-consumption controls, imposes transition equations as constraints, and uses an analytic gradient.  Outputs the user may be interested in include Welfare, abaterate, emtax_pertCO2 (in 2010 dollars), T (temperature, deg C wrt 1900), Carbon_ppm (atmospheric carbon, in ppm), and emsind (industrial emissions, Gt C).  Elements of each vector correspond to elements of year vector.  User may also be interested in SCC_pertCO2, which calculates marginal damage from a pulse of emissions in a given period.  If Params.optimizeonlysavings=1, then this gives the social cost of carbon along the business-as-usual trajectory.
 
 sub_parameters.m: Defines equations of the model and parameterizes the model.  Some users may want to change some of these parameters.  When changing equations, make sure to also change their derivatives.
 
